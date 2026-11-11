@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { X, Plane, MapPin, Calendar, ArrowRight, Gift } from 'lucide-react'
 import madinahImg from '../../assets/images/pkg-madinah.webp'
 import iraqImg from '../../assets/images/pkg-iraq.webp'
@@ -9,12 +9,14 @@ import bakuImg from '../../assets/images/pkg-baku.webp'
  * 
  * - Responsive sizing across Mobile, Tablet, and Desktop with zero scrolling.
  * - Website brand theme colors (Deep Plum #44163D, Golden Yellow #ECBC00).
+ * - Shows automatically only when user scrolls down a little bit, not on immediate page load.
  * - Floating trigger button is strictly hidden on the Hero/Header and only
  *   appears in the lower corner once scrolled into the Destinations section.
  */
 export default function FeaturedPackagesModal() {
   const [isOpen, setIsOpen] = useState(false)
   const [inDestinationsView, setInDestinationsView] = useState(false)
+  const hasTriggeredOnScroll = useRef(false)
 
   useEffect(() => {
     // Pre-cache package images immediately so they appear with zero lag when modal opens
@@ -23,27 +25,30 @@ export default function FeaturedPackagesModal() {
       img.src = src
     })
 
-    // Open modal 800ms after page load
-    const timer = setTimeout(() => {
-      setIsOpen(true)
-    }, 800)
-
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') setIsOpen(false)
     }
     window.addEventListener('keydown', handleKeyDown)
 
-    // Scroll listener: Only show floating button when scrolled into destinations, NEVER in header/hero
+    // Scroll listener: Trigger pop-up only when user scrolls down a bit (~250px),
+    // and show floating badge when in destinations view
     const handleScroll = () => {
+      const scrollY = window.scrollY
       const heroThreshold = window.innerHeight * 0.65
-      setInDestinationsView(window.scrollY > heroThreshold)
+
+      // Show pop-up once user scrolls down slightly
+      if (!hasTriggeredOnScroll.current && scrollY > 250) {
+        hasTriggeredOnScroll.current = true
+        setIsOpen(true)
+      }
+
+      setInDestinationsView(scrollY > heroThreshold)
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
 
     return () => {
-      clearTimeout(timer)
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('scroll', handleScroll)
     }
