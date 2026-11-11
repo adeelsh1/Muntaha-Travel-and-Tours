@@ -17,6 +17,12 @@ export default function FeaturedPackagesModal() {
   const [inDestinationsView, setInDestinationsView] = useState(false)
 
   useEffect(() => {
+    // Pre-cache package images immediately so they appear with zero lag when modal opens
+    ;[madinahImg, iraqImg, bakuImg].forEach((src) => {
+      const img = new Image()
+      img.src = src
+    })
+
     // Open modal 800ms after page load
     const timer = setTimeout(() => {
       setIsOpen(true)
@@ -121,6 +127,8 @@ export default function FeaturedPackagesModal() {
                     <img
                       src={pkg.image}
                       alt={pkg.alt}
+                      loading="eager"
+                      decoding="async"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     {/* Price Pill Tag in Top-Right Corner */}
